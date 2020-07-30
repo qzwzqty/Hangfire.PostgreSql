@@ -97,7 +97,7 @@ namespace Hangfire.PostgreSql
         public override void ExpireJob(string jobId, TimeSpan expireIn)
         {
             var sql = $@"
-UPDATE ""{_options.SchemaName}"".""job""
+UPDATE ""{_options.SchemaName}"".""{_options.TablesPrefix}job""
 SET ""expireat"" = NOW() AT TIME ZONE 'UTC' + INTERVAL '{(long)expireIn.TotalSeconds} SECONDS'
 WHERE ""id"" = @id;
 ";
@@ -110,7 +110,7 @@ WHERE ""id"" = @id;
         public override void PersistJob(string jobId)
         {
             var sql = $@"
-UPDATE ""{_options.SchemaName}"".""job"" 
+UPDATE ""{_options.SchemaName}"".""{_options.TablesPrefix}job"" 
 SET ""expireat"" = NULL 
 WHERE ""id"" = @id;
 ";
@@ -123,10 +123,10 @@ WHERE ""id"" = @id;
         {
             var addAndSetStateSql = $@"
 WITH s AS (
-    INSERT INTO ""{_options.SchemaName}"".""state"" (""jobid"", ""name"", ""reason"", ""createdat"", ""data"")
+    INSERT INTO ""{_options.SchemaName}"".""{_options.TablesPrefix}state"" (""jobid"", ""name"", ""reason"", ""createdat"", ""data"")
     VALUES (@jobId, @name, @reason, @createdAt, @data) RETURNING ""id""
 )
-UPDATE ""{_options.SchemaName}"".""job"" j
+UPDATE ""{_options.SchemaName}"".""{_options.TablesPrefix}job"" j
 SET ""stateid"" = s.""id"", ""statename"" = @name
 FROM s
 WHERE j.""id"" = @id;
@@ -148,7 +148,7 @@ WHERE j.""id"" = @id;
         public override void AddJobState(string jobId, IState state)
         {
             var addStateSql = $@"
-INSERT INTO ""{_options.SchemaName}"".""state"" (""jobid"", ""name"", ""reason"", ""createdat"", ""data"")
+INSERT INTO ""{_options.SchemaName}"".""{_options.TablesPrefix}state"" (""jobid"", ""name"", ""reason"", ""createdat"", ""data"")
 VALUES (@jobId, @name, @reason, @createdAt, @data);
 ";
 
@@ -174,7 +174,7 @@ VALUES (@jobId, @name, @reason, @createdAt, @data);
 
         public override void IncrementCounter(string key)
         {
-            var sql = $@"INSERT INTO ""{_options.SchemaName}"".""counter"" (""key"", ""value"") VALUES (@key, @value);";
+            var sql = $@"INSERT INTO ""{_options.SchemaName}"".""{_options.TablesPrefix}counter"" (""key"", ""value"") VALUES (@key, @value);";
             QueueCommand((con) => con.Execute(
                 sql,
                 new { key, value = +1 }));
@@ -183,7 +183,7 @@ VALUES (@jobId, @name, @reason, @createdAt, @data);
         public override void IncrementCounter(string key, TimeSpan expireIn)
         {
             var sql = $@"
-INSERT INTO ""{_options.SchemaName}"".""counter""(""key"", ""value"", ""expireat"") 
+INSERT INTO ""{_options.SchemaName}"".""{_options.TablesPrefix}counter""(""key"", ""value"", ""expireat"") 
 VALUES (@key, @value, NOW() AT TIME ZONE 'UTC' + INTERVAL '{(long)expireIn.TotalSeconds} SECONDS');";
 
             QueueCommand((con) => con.Execute(
@@ -193,7 +193,7 @@ VALUES (@key, @value, NOW() AT TIME ZONE 'UTC' + INTERVAL '{(long)expireIn.Total
 
         public override void DecrementCounter(string key)
         {
-            var sql = $@"INSERT INTO ""{_options.SchemaName}"".""counter"" (""key"", ""value"") VALUES (@key, @value);";
+            var sql = $@"INSERT INTO ""{_options.SchemaName}"".""{_options.TablesPrefix}counter"" (""key"", ""value"") VALUES (@key, @value);";
             QueueCommand((con) => con.Execute(
                 sql,
                 new { key, value = -1 }));
@@ -202,7 +202,7 @@ VALUES (@key, @value, NOW() AT TIME ZONE 'UTC' + INTERVAL '{(long)expireIn.Total
         public override void DecrementCounter(string key, TimeSpan expireIn)
         {
             var sql = $@"
-INSERT INTO ""{_options.SchemaName}"".""counter""(""key"", ""value"", ""expireat"") 
+INSERT INTO ""{_options.SchemaName}"".""{_options.TablesPrefix}counter""(""key"", ""value"", ""expireat"") 
 VALUES (@key, @value, NOW() AT TIME ZONE 'UTC' + INTERVAL '{(long)expireIn.TotalSeconds} SECONDS');";
 
             QueueCommand((con) => con.Execute(sql
@@ -221,14 +221,14 @@ VALUES (@key, @value, NOW() AT TIME ZONE 'UTC' + INTERVAL '{(long)expireIn.Total
 WITH ""inputvalues"" AS (
 	SELECT @key ""key"", @value ""value"", @score ""score""
 ), ""updatedrows"" AS ( 
-	UPDATE ""{_options.SchemaName}"".""set"" ""updatetarget""
+	UPDATE ""{_options.SchemaName}"".""{_options.TablesPrefix}set"" ""updatetarget""
 	SET ""score"" = ""inputvalues"".""score""
 	FROM ""inputvalues""
 	WHERE ""updatetarget"".""key"" = ""inputvalues"".""key""
 	AND ""updatetarget"".""value"" = ""inputvalues"".""value""
 	RETURNING ""updatetarget"".""key"", ""updatetarget"".""value""
 )
-INSERT INTO ""{_options.SchemaName}"".""set""(""key"", ""value"", ""score"")
+INSERT INTO ""{_options.SchemaName}"".""{_options.TablesPrefix}set""(""key"", ""value"", ""score"")
 SELECT ""key"", ""value"", ""score"" FROM ""inputvalues"" ""insertvalues""
 WHERE NOT EXISTS (
 	SELECT 1 
@@ -247,7 +247,7 @@ WHERE NOT EXISTS (
         {
             QueueCommand((con) => con.Execute(
                 $@"
-DELETE FROM ""{_options.SchemaName}"".""set"" 
+DELETE FROM ""{_options.SchemaName}"".""{_options.TablesPrefix}set"" 
 WHERE ""key"" = @key 
 AND ""value"" = @value;
 ",
@@ -258,7 +258,7 @@ AND ""value"" = @value;
         {
             QueueCommand((con) => con.Execute(
                 $@"
-INSERT INTO ""{_options.SchemaName}"".""list"" (""key"", ""value"") 
+INSERT INTO ""{_options.SchemaName}"".""{_options.TablesPrefix}list"" (""key"", ""value"") 
 VALUES (@key, @value);
 ",
                 new { key, value }));
@@ -268,7 +268,7 @@ VALUES (@key, @value);
         {
             QueueCommand((con) => con.Execute(
                 $@"
-DELETE FROM ""{_options.SchemaName}"".""list"" 
+DELETE FROM ""{_options.SchemaName}"".""{_options.TablesPrefix}list"" 
 WHERE ""key"" = @key 
 AND ""value"" = @value;
 ",
@@ -278,11 +278,11 @@ AND ""value"" = @value;
         public override void TrimList(string key, int keepStartingFrom, int keepEndingAt)
         {
             var trimSql = $@"
-DELETE FROM ""{_options.SchemaName}"".""list"" AS source
+DELETE FROM ""{_options.SchemaName}"".""{_options.TablesPrefix}list"" AS source
 WHERE ""key"" = @key
 AND ""id"" NOT IN (
     SELECT ""id"" 
-    FROM ""{_options.SchemaName}"".""list"" AS keep
+    FROM ""{_options.SchemaName}"".""{_options.TablesPrefix}list"" AS keep
     WHERE keep.""key"" = source.""key""
     ORDER BY ""id"" 
     OFFSET @start LIMIT @end
@@ -303,14 +303,14 @@ AND ""id"" NOT IN (
 WITH ""inputvalues"" AS (
 	SELECT @key ""key"", @field ""field"", @value ""value""
 ), ""updatedrows"" AS ( 
-	UPDATE ""{_options.SchemaName}"".""hash"" ""updatetarget""
+	UPDATE ""{_options.SchemaName}"".""{_options.TablesPrefix}hash"" ""updatetarget""
 	SET ""value"" = ""inputvalues"".""value""
 	FROM ""inputvalues""
 	WHERE ""updatetarget"".""key"" = ""inputvalues"".""key""
 	AND ""updatetarget"".""field"" = ""inputvalues"".""field""
 	RETURNING ""updatetarget"".""key"", ""updatetarget"".""field""
 )
-INSERT INTO ""{_options.SchemaName}"".""hash""(""key"", ""field"", ""value"")
+INSERT INTO ""{_options.SchemaName}"".""{_options.TablesPrefix}hash""(""key"", ""field"", ""value"")
 SELECT ""key"", ""field"", ""value"" 
 FROM ""inputvalues"" ""insertvalues""
 WHERE NOT EXISTS (
@@ -333,7 +333,7 @@ WHERE NOT EXISTS (
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            var sql = $@"DELETE FROM ""{_options.SchemaName}"".""hash"" WHERE ""key"" = @key";
+            var sql = $@"DELETE FROM ""{_options.SchemaName}"".""{_options.TablesPrefix}hash"" WHERE ""key"" = @key";
             QueueCommand((con) => con.Execute(
                 sql,
                 new { key }));
@@ -343,7 +343,7 @@ WHERE NOT EXISTS (
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            var sql = $@"UPDATE ""{_options.SchemaName}"".""set"" SET ""expireat"" = @expireAt WHERE ""key"" = @key";
+            var sql = $@"UPDATE ""{_options.SchemaName}"".""{_options.TablesPrefix}set"" SET ""expireat"" = @expireAt WHERE ""key"" = @key";
 
             QueueCommand((connection) => connection.Execute(
                 sql,
@@ -354,7 +354,7 @@ WHERE NOT EXISTS (
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            var sql = $@"UPDATE ""{_options.SchemaName}"".""list"" SET ""expireat"" = @expireAt WHERE ""key"" = @key";
+            var sql = $@"UPDATE ""{_options.SchemaName}"".""{_options.TablesPrefix}list"" SET ""expireat"" = @expireAt WHERE ""key"" = @key";
 
             QueueCommand((connection) => connection.Execute(
                 sql,
@@ -366,7 +366,7 @@ WHERE NOT EXISTS (
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            var sql = $@"UPDATE ""{_options.SchemaName}"".""hash"" SET expireat = @expireAt WHERE ""key"" = @key";
+            var sql = $@"UPDATE ""{_options.SchemaName}"".""{_options.TablesPrefix}hash"" SET expireat = @expireAt WHERE ""key"" = @key";
 
             QueueCommand((connection) => connection.Execute(
                 sql,
@@ -378,7 +378,7 @@ WHERE NOT EXISTS (
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            var sql = $@"UPDATE ""{_options.SchemaName}"".""set"" SET expireat = null WHERE ""key"" = @key";
+            var sql = $@"UPDATE ""{_options.SchemaName}"".""{_options.TablesPrefix}set"" SET expireat = null WHERE ""key"" = @key";
 
             QueueCommand((connection) => connection.Execute(sql, new { key }));
         }
@@ -387,7 +387,7 @@ WHERE NOT EXISTS (
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            var sql = $@"UPDATE ""{_options.SchemaName}"".""list"" SET expireat = null WHERE ""key"" = @key";
+            var sql = $@"UPDATE ""{_options.SchemaName}"".""{_options.TablesPrefix}list"" SET expireat = null WHERE ""key"" = @key";
 
             QueueCommand((connection) => connection.Execute(sql, new { key }));
         }
@@ -396,7 +396,7 @@ WHERE NOT EXISTS (
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            var sql = $@"UPDATE ""{_options.SchemaName}"".""hash"" SET expireat = null WHERE ""key"" = @key";
+            var sql = $@"UPDATE ""{_options.SchemaName}"".""{_options.TablesPrefix}hash"" SET expireat = null WHERE ""key"" = @key";
 
             QueueCommand((connection) => connection.Execute(
                 sql,
@@ -408,7 +408,7 @@ WHERE NOT EXISTS (
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (items == null) throw new ArgumentNullException(nameof(items));
 
-            var sql = $@"INSERT INTO ""{_options.SchemaName}"".""set"" (""key"", ""value"", ""score"") VALUES (@key, @value, 0.0)";
+            var sql = $@"INSERT INTO ""{_options.SchemaName}"".""{_options.TablesPrefix}set"" (""key"", ""value"", ""score"") VALUES (@key, @value, 0.0)";
 
             QueueCommand((connection) => connection.Execute(
                 sql,
@@ -419,7 +419,7 @@ WHERE NOT EXISTS (
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            var sql = $@"DELETE FROM ""{_options.SchemaName}"".""set"" WHERE ""key"" = @key";
+            var sql = $@"DELETE FROM ""{_options.SchemaName}"".""{_options.TablesPrefix}set"" WHERE ""key"" = @key";
 
             QueueCommand((connection) => connection.Execute(sql, new { key }));
         }

@@ -25,6 +25,7 @@ namespace Hangfire.PostgreSql
 {
     public class PostgreSqlStorageOptions
     {
+        private static readonly string DefaultTablesPrefix = string.Empty;
         private TimeSpan _queuePollInterval;
         private TimeSpan _invisibilityTimeout;
         private TimeSpan _distributedLockTimeout;
@@ -39,7 +40,9 @@ namespace Hangfire.PostgreSql
             SchemaName = "hangfire";
             UseNativeDatabaseTransactions = true;
             PrepareSchemaIfNecessary = true;
+            this.TablesPrefix = DefaultTablesPrefix;
         }
+        public string TablesPrefix { get; set; }
 
         public TimeSpan QueuePollInterval
         {

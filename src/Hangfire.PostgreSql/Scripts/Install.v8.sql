@@ -12,5 +12,5 @@ BEGIN
 END
 $$;
 
-ALTER TABLE "counter" ALTER COLUMN value TYPE bigint;
-ALTER TABLE "counter" DROP COLUMN updatecount RESTRICT;
+ALTER TABLE "[tablesPrefix]counter" ALTER COLUMN value TYPE bigint;
+ALTER TABLE "[tablesPrefix]counter" DROP COLUMN updatecount RESTRICT;

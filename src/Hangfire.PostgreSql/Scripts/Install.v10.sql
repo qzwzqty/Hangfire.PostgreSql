@@ -12,4 +12,4 @@ BEGIN
 END
 $$;
 
-ALTER TABLE "jobqueue" ALTER COLUMN "queue" TYPE TEXT;
+ALTER TABLE "[tablesPrefix]jobqueue" ALTER COLUMN "queue" TYPE TEXT;

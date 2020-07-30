@@ -16,9 +16,9 @@ $$;
 DO $$
 BEGIN
     BEGIN
-        CREATE INDEX "ix_hangfire_counter_expireat" ON "counter" ("expireat");
+        CREATE INDEX "ix_hangfire_[tablesPrefix]counter_expireat" ON "[tablesPrefix]counter" ("expireat");
     EXCEPTION
-        WHEN duplicate_table THEN RAISE NOTICE 'INDEX ix_hangfire_counter_expireat already exists.';
+        WHEN duplicate_table THEN RAISE NOTICE 'INDEX ix_hangfire_[tablesPrefix]counter_expireat already exists.';
     END;
 END;
 $$;
@@ -26,9 +26,9 @@ $$;
 DO $$
 BEGIN
     BEGIN
-        CREATE INDEX "ix_hangfire_jobqueue_jobidandqueue" ON "jobqueue" ("jobid","queue");
+        CREATE INDEX "ix_hangfire_[tablesPrefix]jobqueue_jobidandqueue" ON "[tablesPrefix]jobqueue" ("jobid","queue");
     EXCEPTION
-        WHEN duplicate_table THEN RAISE NOTICE 'INDEX "ix_hangfire_jobqueue_jobidandqueue" already exists.';
+        WHEN duplicate_table THEN RAISE NOTICE 'INDEX "ix_hangfire_[tablesPrefix]jobqueue_jobidandqueue" already exists.';
     END;
 END;
 $$;

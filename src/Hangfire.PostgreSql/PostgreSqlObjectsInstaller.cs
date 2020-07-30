@@ -34,7 +34,7 @@ namespace Hangfire.PostgreSql
     {
         private static readonly ILog Log = LogProvider.GetLogger(typeof(PostgreSqlStorage));
 
-        public static void Install(NpgsqlConnection connection, string schemaName = "hangfire")
+        public static void Install(NpgsqlConnection connection, string schemaName = "hangfire", string tablesPrefix = "")
         {
             if (connection == null)
                 throw new ArgumentNullException(nameof(connection));
@@ -54,6 +54,7 @@ namespace Hangfire.PostgreSql
                         script = GetStringResource(
                           typeof(PostgreSqlObjectsInstaller).GetTypeInfo().Assembly,
                           $"Hangfire.PostgreSql.Scripts.Install.v{version.ToString(CultureInfo.InvariantCulture)}.sql");
+                        script = script.Replace("[tablesPrefix]", $"{tablesPrefix}");
                     }
                     catch (MissingManifestResourceException)
                     {

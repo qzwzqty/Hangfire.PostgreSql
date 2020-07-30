@@ -12,4 +12,4 @@ BEGIN
 END
 $$;
 
-ALTER TABLE "lock" ALTER COLUMN "resource" TYPE TEXT;
+ALTER TABLE "[tablesPrefix]lock" ALTER COLUMN "resource" TYPE TEXT;

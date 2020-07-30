@@ -12,4 +12,4 @@ BEGIN
 END
 $$;
 
-ALTER TABLE "lock" ADD COLUMN acquired timestamp without time zone;
+ALTER TABLE "[tablesPrefix]lock" ADD COLUMN acquired timestamp without time zone;
